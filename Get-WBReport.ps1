@@ -2,75 +2,75 @@
 # Twitter: @GavinEke
 #
 # Requires Windows Server Backup Command Line Tools
-# Tested on Windows Server 2008/2008 R2 using PowerShell 2.0
+# Tested on Windows Server 2012 R2 using PowerShell 4.0
 # Example usage: .\Get-WBReport.ps1
 
 #region Varibles
 # You should change the variables in this region to suit your environment
-$users = "test@example.com" # List of users to email your report to (separate by comma)
-$fromemail = "test@example.com"
-$server = "mail.example.com" #enter your own SMTP server DNS name / IP address here
+$MailMessageTo = "test@example.com" # List of users to email your report to (separate by comma)
+$MailMessageFrom = "test@example.com"
+$MailMessageSMTPServer = "mail.example.com" # Enter your own SMTP server DNS name / IP address here
+$MailMessagePriority = "Normal" # Low/Normal/High
+$HTMLMessageSubject = $env:computername+": Backup Report - "+(Get-Date)
 #endregion
 
 # DO NOT CHANGE ANYTHING PAST THIS LINE!
 
-# Required to use PowerShell with Windows Server Backup
-add-pssnapin windows.serverbackup
-
 # Variables
-$CurrentTime = Get-Date
-$computer = Get-Content env:computername
+$WBJob = Get-WBJob -Previous 1
 $WBSummary = Get-WBSummary
-$WBLastSuccess = $WBSummary.LastSuccessfulBackupTime
-$WBResult = $WBSummary.LastBackupResultHR
-$WBErrorMsg = $WBSummary.DetailedMessage
+$WBJobStartTime = $WBJob.StartTime
+$WBJobEndTime = $WBJob.EndTime
+$WBJobSuccessLog = Get-Content $WBJob.SuccessLogPath
+$WBJobFailureLog = Get-Content $WBJob.FailureLogPath
 
 # Change Result of 0 to Success in green text and any other result as Failure in red text
-if ($WBResult -eq 0) {$WBResult = "<b><font color=green>Success</font></b>"}
-else {$WBResult = "<b><font color=red>Failure</font></b>"}
+If ($WBSummary.LastBackupResultHR -eq 0) 
+{
+$HTMLMessageBody = @"
+<h1><font color=green>Backup Success</font></h1><br />
+Start Time: $WBJobStartTime<br />
+Start Time: $WBJobEndTime<br />
+<br />
+<b>Log:</b><br />
+<br />
+$WBJobSuccessLog
+"@
+}
+Else
+{
+$HTMLMessageBody = @"
+<h1><font color=red>Backup Failure</font></h1><br />
+Start Time: $WBJobStartTime<br />
+Start Time: $WBJobEndTime<br />
+<br />
+<b>Log:</b><br />
+<br />
+$WBJobFailureLog
+"@
+}
 
 # Assemble the HTML Report
 $HTMLMessage = @"
 <!DOCTYPE html>
 <html>
-
 <head>
-<title>Windows Backup Report</title>
-<style>
-	body {
-		font-family: Verdana, Geneva, Arial, Helvetica, sans-serif;
-	}
-	
-	#report{
-		width: 600px;
-	}
-	
-	h3{
-		clear: both;
-		font-size: 115%;
-		margin-left: 20px;
-		margin-top: 30px;
-	}
-	
-	p{ 
-		margin-left: 20px;
-		font-size: 12px;
-	}
-</style>
+<title>$HTMLMessageSubject</title>
 </head>
-
 <body>
-<div id="report">
-<p><h3>$computer Windows Backup Report</p></h3>
-<p>Todays date: $CurrentTime</p>
-<p>Last Successful Backup: $WBLastSuccess</p>
-<p>Backup Result: $WBResult</p>
-<p>Error Message (if applicable): $WBErrorMsg</p>
-</div>
+$HTMLMessageBody
 </body>
-
 </html>
 "@
 
 # Email the report
-Send-MailMessage -from $fromemail -to $users -subject "$computer Windows Backup Report" -BodyAsHTML -body $HTMLMessage -priority Normal -smtpServer $server
+$MailMessageOptions = @{
+    From            = "$MailMessageFrom"
+    To              = "$MailMessageTo"
+    Subject         = "$HTMLMessageSubject"
+    BodyAsHTML      = $True
+    Body            = "$HTMLMessage"
+    Priority        = "$MailMessagePriority"
+    SmtpServer      = "$MailMessageSMTPServer"
+}
+Send-MailMessage @MailMessageOptions
