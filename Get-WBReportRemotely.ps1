@@ -43,32 +43,32 @@ $computers = Get-Content -Path $args[0] # Takes first param as computer list
 Function Get-WBSummary {}
 
 ForEach ($computer in $computers) {
-    # Clear Old Variable Value
-    $WBLastSuccess = ""
-    
+	# Clear Old Variable Value
+	$WBLastSuccess = ""
+	
 	# Test PSRemoting Connection
-    Test-WSMan -ComputerName $computer
+	Test-WSMan -ComputerName $computer
 	If ($?) {
 		# Create PSRemoting Connection
 		$PSSesh = New-PSSession -ComputerName $computer
-		
-        # Get OS Version Number
+			
+		# Get OS Version Number
 		$OSVer = (Get-CimInstance -Class Win32_OperatingSystem).version
 		
 		# Run Remote PowerShell Commands - 2008 requires snapin
-        If ($OSVer -le 6.1) {
-		    Invoke-Command -Session $PSSesh -ScriptBlock {Add-PSSnapin -Name Windows.ServerBackup}
-        }
+		If ($OSVer -le 6.1) {
+			Invoke-Command -Session $PSSesh -ScriptBlock {Add-PSSnapin -Name Windows.ServerBackup}
+		}
 		$WBResult = Invoke-Command -Session $PSSesh -ScriptBlock {(Get-WBSummary).LastBackupResultHR}
 		$WBLastSuccess = Invoke-Command -Session $PSSesh -ScriptBlock {(Get-WBSummary).LastSuccessfulBackupTime}
 		
 		# Change Result of 0 to Success in green text and any other result as Failure in red text
 		If ($WBResult -eq 0) {
-            $WBResult = "<font color=green>Success</font>"
-        }
+			$WBResult = "<font color=green>Success</font>"
+		}
 		Else {
-            $WBResult = "<font color=red>Failure</font>"
-        }
+			$WBResult = "<font color=red>Failure</font>"
+		}
 		
 		# Place Results In HTML Table
 		$HTMLTablePart = "<tr><td>$computer</td><td>$WBResult</td><td>$WBLastSuccess</td></tr>"
@@ -76,7 +76,7 @@ ForEach ($computer in $computers) {
 		
 		# Remove PSRemoting Connection
 		Get-PSSession | Remove-PSSession
-    }
+	}
 	Else {
 		$HTMLTablePart = "<tr><td>$computer</td><td>WinRM Connection Failed</td><td> </td></tr>"
 		$HTMLTableFull += $HTMLTablePart
