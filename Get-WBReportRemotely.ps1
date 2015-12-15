@@ -42,6 +42,7 @@ $computers = Get-Content -Path $args[0] # Takes first param as computer list
 # Faux Get-WBSummary to resolve command not found - http://i.imgur.com/7XBAmNV.png
 Function Get-WBSummary {}
 
+# Loop through each computer
 ForEach ($computer in $computers) {
 	# Clear Old Variable Value
 	$WBLastSuccess = ""
@@ -51,7 +52,7 @@ ForEach ($computer in $computers) {
 	If ($?) {
 		# Create PSRemoting Connection
 		$PSSesh = New-PSSession -ComputerName $computer
-			
+		
 		# Get OS Version Number
 		$OSVer = (Get-CimInstance -Class Win32_OperatingSystem).version
 		
@@ -75,10 +76,10 @@ ForEach ($computer in $computers) {
 		$HTMLTableFull += $HTMLTablePart
 		
 		# Remove PSRemoting Connection
-		Get-PSSession | Remove-PSSession
+		Remove-PSSession -Session $PSSesh
 	}
 	Else {
-		$HTMLTablePart = "<tr><td>$computer</td><td>WinRM Connection Failed</td><td> </td></tr>"
+		$HTMLTablePart = "<tr><td>$computer</td><td>WinRM Connection Failed &nbsp&nbsp&nbsp</td><td> </td></tr>"
 		$HTMLTableFull += $HTMLTablePart
 	}
 }
@@ -92,7 +93,7 @@ $HTMLMessage = @"
 </head>
 <body>
 <table>
-<tr><td><b>Computer Name</b></td><td><b>Last Result &nbsp&nbsp&nbsp</b></td><td><b>Last Successful Backup</b></td></tr>
+<tr><td><b>Computer Name &nbsp&nbsp&nbsp</b></td><td><b>Last Result &nbsp&nbsp&nbsp</b></td><td><b>Last Successful Backup &nbsp&nbsp&nbsp</b></td></tr>
 $HTMLTableFull
 </table>
 </body>
