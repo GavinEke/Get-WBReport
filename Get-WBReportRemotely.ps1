@@ -48,16 +48,16 @@ ForEach ($computer in $computers) {
 	$WBLastSuccess = ""
 	
 	# Test PSRemoting Connection
-	Test-WSMan -ComputerName $computer
+	Test-WSMan -ComputerName $computer -UseSSL
 	If ($?) {
+		# Get OS Version Number
+		$OSVer = Get-WmiObject -ComputerName $computer -Class Win32_OperatingSystem
+		
 		# Create PSRemoting Connection
 		$PSSesh = New-PSSession -ComputerName $computer
 		
-		# Get OS Version Number
-		$OSVer = (Get-CimInstance -Class Win32_OperatingSystem).version
-		
 		# Run Remote PowerShell Commands - 2008 requires snapin
-		If ($OSVer -le 6.1) {
+		If (($OSVer).Version -le 6.1) {
 			Invoke-Command -Session $PSSesh -ScriptBlock {Add-PSSnapin -Name Windows.ServerBackup}
 		}
 		$WBResult = Invoke-Command -Session $PSSesh -ScriptBlock {(Get-WBSummary).LastBackupResultHR}
