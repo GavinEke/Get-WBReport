@@ -33,7 +33,7 @@ If ($WBSummary.LastBackupResultHR -eq 0) {
     $WBJobLog = $WBJobSuccessLog
 } Else {
     $WBJobResult = "failed"
-    $WBJobFailureLog
+    $WBJobLog = $WBJobFailureLog
 }
 
 # Assemble the HTML Report
