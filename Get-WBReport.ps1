@@ -49,8 +49,8 @@ h1.failed {color:red;}
 </head>
 <body>
 <h1 class="$WBJobResult">Backup $WBJobResult</h1>
-Start Time: $WBJobStartTime<br>
-Start Time: $WBJobEndTime<br>
+Start: $WBJobStartTime<br>
+Finished: $WBJobEndTime<br>
 <br>
 <p>Log:</p>
 <br>
