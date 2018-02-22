@@ -11,7 +11,7 @@
 #>
 
 # Public Varibles
-$MailMessageTo = "test@example.com" # List of users to email your report to (separate by comma)
+[string[]]$MailMessageTo = "test@example.com","test2@example.com # List of users to email your report to (separate by comma)
 $MailMessageFrom = "test@example.com" # Enter the email you would like the report sent from
 $MailMessageSMTPServer = "mail.example.com" # Enter your own SMTP server DNS name / IP address here
 $MailMessagePriority = "Normal" # Low/Normal/High
@@ -62,7 +62,7 @@ $WBJobLog
 # Email the report
 $MailMessageOptions = @{
     From            = "$MailMessageFrom"
-    To              = "$MailMessageTo"
+    To              = $MailMessageTo
     Subject         = "$HTMLMessageSubject"
     BodyAsHTML      = $True
     Body            = "$HTMLMessage"
