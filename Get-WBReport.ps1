@@ -15,7 +15,7 @@
 $MailMessageFrom = "test@example.com" # Enter the email you would like the report sent from
 $MailMessageSMTPServer = "mail.example.com" # Enter your own SMTP server DNS name / IP address here
 $MailMessagePriority = "Normal" # Low/Normal/High
-$HTMLMessageSubject = $env:computername+": Backup Report - "+(Get-Date) # Email Subject
+$HTMLMessageSubject = $env:computername+": Backup Report - "+(Get-Date -Format "yyyy-MM-dd HH:mm") # Email Subject
 
 # DO NOT CHANGE ANYTHING PAST THIS LINE!
 
@@ -30,10 +30,10 @@ $WBJobFailureLog = Get-Content -Path $WBJob.FailureLogPath
 # Change Result of 0 to Success in green text and any other result as Failure in red text
 If ($WBSummary.LastBackupResultHR -eq 0) {
     $WBJobResult = "successful"
-    $WBJobLog = $WBJobSuccessLog
+    $WBJobLog = $WBJobSuccessLog -join "<br />"
 } Else {
     $WBJobResult = "failed"
-    $WBJobLog = $WBJobFailureLog
+    $WBJobLog = $WBJobFailureLog -join "<br />"
 }
 
 # Assemble the HTML Report
